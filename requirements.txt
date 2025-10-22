@@ -1,0 +1,9 @@
+aiocache
+zenrows
+html2text
+langchain
+langchain-text-splitter
+langchain-openai
+langchain-core
+tenacity
+git+https://github.com/madeinmo/gpt-extractive-summarizer
