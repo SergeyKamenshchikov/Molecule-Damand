@@ -1,11 +1,13 @@
-from molecule_demand_short import compute_molecule, PERPLEXITY_API_KEY
+from molecule_demand_short import compute_molecule
 import asyncio
 from dotenv import load_dotenv
+from pathlib import Path
 
 
 if __name__ == "__main__":
     print(load_dotenv())
     query = "3D печать керамикой"
-    print(PERPLEXITY_API_KEY)
     df = asyncio.run(compute_molecule(query, TEST=True, verbose=True))
-    df.to_excel('data/resul.xlsx', index=False)
+    result_path = Path('result_data')
+    result_path.mkdir(exist_ok=True)
+    df.to_excel(result_path/'result.xlsx', index=False)

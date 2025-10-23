@@ -350,7 +350,13 @@ async def process_product(product_A: str, product_B: str, synergy_threshold: flo
       # Get the best synergy
       best_synergy, best_synergy_citation_url, best_synergy_citation = await get_best_synergy(synergies)
 
-      return {'best_synergy': best_synergy, 'best_synergy_citation': best_synergy_citation, 'best_synergy_citation_url': best_synergy_citation_url}
+      return {
+          'best_synergy': best_synergy,
+          'best_synergy_citation': best_synergy_citation,
+          'best_synergy_citation_url': best_synergy_citation_url,
+          'case_count': case_count,
+          'description_count': descriptions_retrieved,
+      }
     except:
       print(traceback.format_exc())
       return default_result
@@ -453,11 +459,12 @@ async def compute_molecule(product_ru: str, df: pd.DataFrame = df, SYNERGY_THRES
         output_df.loc[i, 'best_synergy'] = result['best_synergy']
         output_df.loc[i, 'best_synergy_citation'] = result['best_synergy_citation']
         output_df.loc[i, 'best_synergy_citation_url'] = result['best_synergy_citation_url']
-        output_df.loc[i, 'case_count'] = case_count
-        output_df.loc[i, 'description_count'] = description_count
 
-    print(f"Total cases processed: {total_cases}")
-    print(f"Total descriptions retrieved: {total_descriptions}")
+    if verbose:
+        print(f"Total cases: {total_cases}")
+        print(f"Descriptions retrieved: {total_descriptions}")
+
+    output_df = output_df.drop(columns=['case_count', 'description_count'], errors='ignore')
 
     synergy_df = output_df[output_df['best_synergy'] > 0].copy()
     synergy_df['target'] = product_ru
@@ -470,10 +477,8 @@ async def compute_molecule(product_ru: str, df: pd.DataFrame = df, SYNERGY_THRES
             columns={
                 'best_synergy_citation_url': 'Ссылка на кейс',
                 'best_synergy_citation': 'Краткое описание кейса',
-                'case_count': 'Количество кейсов',
-                'description_count': 'Количество описаний',
             }
-        )[['Направление', 'Ссылка на кейс', 'Краткое описание кейса', 'Количество кейсов', 'Количество описаний']]
+        )[['Направление', 'Ссылка на кейс', 'Краткое описание кейса']]
         synergy_df['Продукты'] = parallel_text_func(synergy_df['Краткое описание кейса'].tolist(), extract_technology, max_workers=10)
 
         print('\n', synergy_df.to_markdown(index=False, tablefmt="grid"))
